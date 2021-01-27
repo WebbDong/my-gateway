@@ -1,9 +1,7 @@
 package com.webbdong.gateway.netty.handler;
 
-import com.webbdong.gateway.forward.Forwarder;
 import com.webbdong.gateway.forward.ForwardByOkHttpImpl;
-import com.webbdong.gateway.router.RandomRouter;
-import com.webbdong.gateway.router.Router;
+import com.webbdong.gateway.forward.Forwarder;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -21,8 +19,6 @@ import io.netty.handler.codec.http.HttpUtil;
 public final class ForwardHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     private Forwarder forwarder = new ForwardByOkHttpImpl();
-
-    private Router router = new RandomRouter();
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {

@@ -29,6 +29,6 @@ public class RouteConfig {
     /**
      * url 匹配条件数组
      */
-    private String[] predicates;
+    private String[] paths;
 
 }

@@ -11,11 +11,6 @@ import io.netty.handler.codec.http.FullHttpResponse;
 public interface Forwarder {
 
     /**
-     * 服务id，通过这个id来获取对应的路由配置
-     */
-    String FORWARD_ROUTE_SERVER_ID_HTTP_HEADER = "Server-Id";
-
-    /**
      * 转发到下游服务
      * @param fullRequest
      * @return

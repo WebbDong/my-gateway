@@ -1,5 +1,7 @@
 package com.webbdong.gateway.forward;
 
+import com.webbdong.gateway.router.RandomRouter;
+import com.webbdong.gateway.router.Router;
 import com.webbdong.gateway.util.OkHttpClientUtil;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -22,16 +24,22 @@ import java.io.IOException;
  */
 public class ForwardByOkHttpImpl implements Forwarder {
 
+    private Router router = new RandomRouter();
+
     @Override
     public FullHttpResponse forward(FullHttpRequest fullRequest) {
+        final String url = router.route(fullRequest.uri());
+        if (url == null) {
+            return null;
+        }
+
         OkHttpClient client = OkHttpClientUtil.getInstance();
 
         final Headers.Builder headersBuilder = new Headers.Builder();
         fullRequest.headers().forEach(entry -> headersBuilder.add(entry.getKey(), entry.getValue()));
 
-        fullRequest.headers().get("");
         StringBuilder urlBuilder = new StringBuilder();
-        urlBuilder.append("http://localhost:8082")
+        urlBuilder.append(url)
                 .append(fullRequest.uri());
         Request request = new Request.Builder()
                 .get()

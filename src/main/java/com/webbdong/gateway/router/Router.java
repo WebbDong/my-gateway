@@ -9,9 +9,9 @@ public interface Router {
 
     /**
      * 路由
-     * @param requestUrl
+     * @param requestUri
      * @return
      */
-    String route(String requestUrl);
+    String route(String requestUri);
 
 }

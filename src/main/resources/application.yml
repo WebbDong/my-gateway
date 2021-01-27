@@ -4,7 +4,7 @@ myGateway:
   routes:
     - id: HttpServer01
       listOfServers:
-        - "http://localhost:8080"
         - "http://localhost:8081"
-      predicates:
-        - /server01/*
+        - "http://localhost:8082"
+      paths:
+        - /server01
