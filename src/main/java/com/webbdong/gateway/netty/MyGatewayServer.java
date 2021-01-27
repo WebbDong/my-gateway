@@ -1,14 +1,18 @@
 package com.webbdong.gateway.netty;
 
 import com.webbdong.gateway.config.SystemConfigHolder;
+import com.webbdong.gateway.netty.handler.ForwardHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.EpollChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
@@ -37,7 +41,17 @@ public class MyGatewayServer {
 
             bootstrap.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
                     .handler(new LoggingHandler(LogLevel.INFO))
-                    .childHandler(new HttpInitializer());
+                    .childHandler(new ChannelInitializer() {
+
+                        @Override
+                        protected void initChannel(Channel ch) throws Exception {
+                            ch.pipeline()
+                                    .addLast(new HttpServerCodec())
+                                    .addLast(new HttpObjectAggregator(1024 * 1024))
+                                    .addLast(new ForwardHandler());
+                        }
+
+                    });
 
             Channel ch = bootstrap.bind(SystemConfigHolder.CONFIG.getServer().getPort()).sync().channel();
             ch.closeFuture().sync();

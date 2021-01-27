@@ -2,5 +2,9 @@ server:
   port: 9090
 myGateway:
   routes:
-    - id: url-proxy-1
-      listOfServers: "http://localhost:8080,http://localhost:8081"
+    - id: HttpServer01
+      listOfServers:
+        - "http://localhost:8080"
+        - "http://localhost:8081"
+      predicates:
+        - /server01/*

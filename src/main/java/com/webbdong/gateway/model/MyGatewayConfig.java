@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 /**
  * @author Webb Dong
  * @description: 网关配置
@@ -21,6 +19,6 @@ public class MyGatewayConfig {
     /**
      * 路由配置
      */
-    private List<RouteConfig> routes;
+    private RouteConfig[] routes;
 
 }

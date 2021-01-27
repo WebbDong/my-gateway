@@ -16,8 +16,19 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RouteConfig {
 
+    /**
+     * 服务id
+     */
     private String id;
 
-    private String listOfServers;
+    /**
+     * 下游转发的 url 数组
+     */
+    private String[] listOfServers;
+
+    /**
+     * url 匹配条件数组
+     */
+    private String[] predicates;
 
 }
