@@ -7,13 +7,32 @@ package com.webbdong.gateway.util;
  */
 public class UriUtil {
 
-    public static final String WILDCARD = "*";
+    private static final String HTTP = "http://";
 
-    public static String removeWildcard(String uri) {
-        if (uri.endsWith(WILDCARD)) {
-            return uri.substring(0, uri.length() - 2);
+    private static final String HTTPS = "https://";
+
+    public static String getHostNameFromUrl(String url) {
+        int startIndex = url.indexOf(HTTP);
+        int startOffset = HTTP.length();
+        if (startIndex == -1) {
+            startIndex = url.indexOf(HTTPS);
+            startOffset = HTTPS.length();
         }
-        return uri;
+        if (startIndex == -1) {
+            throw new IllegalArgumentException("url format is wrong!");
+        }
+        int endIndex = url.length();
+        if (url.endsWith("/")) {
+            endIndex--;
+        }
+        return url.substring(startIndex + startOffset, endIndex);
+    }
+
+    public static String urlConcat(String url, String uri) {
+        StringBuilder urlBuilder = new StringBuilder();
+        urlBuilder.append(url)
+                .append(uri == null || uri == "" ? "/" : uri);
+        return urlBuilder.toString();
     }
 
 }

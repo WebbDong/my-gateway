@@ -20,11 +20,12 @@ public class OkHttpUtilTest {
 
         Request request = new Request.Builder()
                 .get()
-                .url("http://localhost:8085")
+                .url("https://www.baidu.com")
                 .build();
 
         Call call = client.newCall(request);
         try (Response response = call.execute()) {
+            System.out.println(response.code());
             System.out.println(response.body().string());
         } catch (IOException e) {
             e.printStackTrace();

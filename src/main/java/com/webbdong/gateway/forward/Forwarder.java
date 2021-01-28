@@ -12,9 +12,10 @@ public interface Forwarder {
 
     /**
      * 转发到下游服务
+     * @param forwardUrl
      * @param fullRequest
      * @return
      */
-    FullHttpResponse forward(FullHttpRequest fullRequest);
+    FullHttpResponse forward(String forwardUrl, FullHttpRequest fullRequest);
 
 }

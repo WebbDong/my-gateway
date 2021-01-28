@@ -1,7 +1,10 @@
 package com.webbdong.gateway.netty.handler;
 
-import com.webbdong.gateway.forward.ForwardByOkHttpImpl;
 import com.webbdong.gateway.forward.Forwarder;
+import com.webbdong.gateway.forward.ForwarderFactory;
+import com.webbdong.gateway.router.RandomRouter;
+import com.webbdong.gateway.router.Router;
+import com.webbdong.gateway.util.FullHttpResponseUtil;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -18,7 +21,9 @@ import io.netty.handler.codec.http.HttpUtil;
  */
 public final class ForwardHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
-    private Forwarder forwarder = new ForwardByOkHttpImpl();
+    private Forwarder forwarder = ForwarderFactory.createForwarder();
+
+    private Router router = new RandomRouter();
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
@@ -27,26 +32,29 @@ public final class ForwardHandler extends SimpleChannelInboundHandler<FullHttpRe
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest fullRequest) throws Exception {
+        System.out.println(this);
         FullHttpResponse httpResponse;
         try {
-            httpResponse = forwarder.forward(fullRequest);
-            if (fullRequest != null && httpResponse != null) {
+            final String forwardUrl = router.route(fullRequest.uri());
+            if (forwardUrl == null) {
+                httpResponse = FullHttpResponseUtil.create404Response();
+            } else {
+                httpResponse = forwarder.forward(forwardUrl, fullRequest);
+            }
+            if (httpResponse == null) {
+                httpResponse = FullHttpResponseUtil.create500Response();
+            }
+            if (fullRequest != null) {
                 if (!HttpUtil.isKeepAlive(fullRequest)) {
-                    ctx.write(httpResponse).addListener(ChannelFutureListener.CLOSE);
+                    ctx.writeAndFlush(httpResponse).addListener(ChannelFutureListener.CLOSE);
                 } else {
                     httpResponse.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-                    ctx.write(httpResponse);
+                    ctx.writeAndFlush(httpResponse);
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        // SimpleChannelInboundHandler 不需要手动调用 ReferenceCountUtil.release，会自动调用
-        /*
-        finally {
-            ReferenceCountUtil.release(fullRequest);
-        }
-         */
     }
 
     @Override

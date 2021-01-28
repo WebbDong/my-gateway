@@ -17,6 +17,11 @@ import lombok.NoArgsConstructor;
 public class MyGatewayConfig {
 
     /**
+     * 转发器客户端类型
+     */
+    private String forwardClientType;
+
+    /**
      * 路由配置
      */
     private RouteConfig[] routes;

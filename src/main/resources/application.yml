@@ -1,10 +1,18 @@
 server:
   port: 9090
 myGateway:
+  # okhttp or netty or httpclient
+  forwardClientType: okhttp
+  # 路由配置
   routes:
     - id: HttpServer01
+      listOfServers:
+        - "https://www.baidu.com/"
+      paths:
+        - /
+    - id: HttpServer02
       listOfServers:
         - "http://localhost:8081"
         - "http://localhost:8082"
       paths:
-        - /server01
+        - /server02

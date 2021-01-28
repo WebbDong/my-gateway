@@ -45,8 +45,7 @@ public class MyGatewayServer {
 
                         @Override
                         protected void initChannel(Channel ch) throws Exception {
-                            ch.pipeline()
-                                    .addLast(new HttpServerCodec())
+                            ch.pipeline().addLast(new HttpServerCodec())
                                     .addLast(new HttpObjectAggregator(1024 * 1024))
                                     .addLast(new ForwardHandler());
                         }

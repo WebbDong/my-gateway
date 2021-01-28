@@ -1,8 +1,8 @@
 package com.webbdong.gateway.forward;
 
-import com.webbdong.gateway.router.RandomRouter;
-import com.webbdong.gateway.router.Router;
+import com.webbdong.gateway.util.FullHttpResponseUtil;
 import com.webbdong.gateway.util.OkHttpClientUtil;
+import com.webbdong.gateway.util.UriUtil;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -19,39 +19,32 @@ import java.io.IOException;
 
 /**
  * @author Webb Dong
- * @description:
+ * @description: 使用 OkHttp 转发
  * @date 2021-01-27 6:26 PM
  */
-public class ForwardByOkHttpImpl implements Forwarder {
-
-    private Router router = new RandomRouter();
+public class OkHttpForwarder implements Forwarder {
 
     @Override
-    public FullHttpResponse forward(FullHttpRequest fullRequest) {
-        final String url = router.route(fullRequest.uri());
-        if (url == null) {
-            return null;
-        }
-
+    public FullHttpResponse forward(String forwardUrl, FullHttpRequest fullRequest) {
         OkHttpClient client = OkHttpClientUtil.getInstance();
 
-        final Headers.Builder headersBuilder = new Headers.Builder();
+        Headers.Builder headersBuilder = new Headers.Builder();
         fullRequest.headers().forEach(entry -> headersBuilder.add(entry.getKey(), entry.getValue()));
 
-        StringBuilder urlBuilder = new StringBuilder();
-        urlBuilder.append(url)
-                .append(fullRequest.uri());
-        Request request = new Request.Builder()
+        Request.Builder requestBuilder = new Request.Builder()
                 .get()
                 .headers(headersBuilder.build())
-                .url(urlBuilder.toString())
-                .build();
+                .header("Host", UriUtil.getHostNameFromUrl(forwardUrl))
+                .url(UriUtil.urlConcat(forwardUrl, fullRequest.uri()));
 
-        Call call = client.newCall(request);
+        Call call = client.newCall(requestBuilder.build());
         try (Response response = call.execute()) {
+            if (response.code() != 200) {
+                return FullHttpResponseUtil.createResponseByStatusCode(response.code());
+            }
             FullHttpResponse httpResponse = new DefaultFullHttpResponse(
                     HttpVersion.HTTP_1_1, HttpResponseStatus.OK,
-                    Unpooled.wrappedBuffer(response.body().string().getBytes("utf-8")));
+                    Unpooled.wrappedBuffer(response.body().bytes()));
             response.headers().forEach(v -> httpResponse.headers().add(v.getFirst(), v.getSecond()));
             return httpResponse;
         } catch (IOException e) {
