@@ -30,7 +30,9 @@ public class OkHttpClientUtil {
             try {
                 INSTANCE.dispatcher().executorService().shutdown();
                 INSTANCE.connectionPool().evictAll();
-                INSTANCE.cache().close();
+                if (INSTANCE.cache() != null) {
+                    INSTANCE.cache().close();
+                }
             } catch (IOException ignored) {
             }
         }

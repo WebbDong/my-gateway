@@ -32,7 +32,6 @@ public final class ForwardHandler extends SimpleChannelInboundHandler<FullHttpRe
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest fullRequest) throws Exception {
-        System.out.println(this);
         FullHttpResponse httpResponse;
         try {
             final String forwardUrl = router.route(fullRequest.uri());

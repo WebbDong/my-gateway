@@ -1,5 +1,6 @@
 package com.webbdong.gateway.forward;
 
+import com.webbdong.gateway.util.UriUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
@@ -10,10 +11,19 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpRequestEncoder;
+import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseDecoder;
+import io.netty.handler.codec.http.HttpVersion;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * @author Webb Dong
@@ -31,17 +41,26 @@ public class NettyClientForwarder implements Forwarder {
                     .channel(NioSocketChannel.class)
                     .option(ChannelOption.TCP_NODELAY, true)
                     .handler(new ChannelInitializer<SocketChannel>() {
+
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
                             ch.pipeline().addLast(new HttpResponseDecoder())
                                     .addLast(new HttpRequestEncoder())
                                     .addLast(new HttpClientHandler());
                         }
+
                     });
 
-            ChannelFuture f = b.connect("www.baidu.com", 80).sync();
+            UriUtil.Host host = UriUtil.getHostNameAndPortFromUrl(forwardUrl);
+            ChannelFuture f = b.connect(host.getHost(), host.getPort()).sync();
+            URI uri = new URI(UriUtil.urlConcat(forwardUrl, fullRequest.uri()));
+            HttpRequest request = new DefaultFullHttpRequest(
+                    HttpVersion.HTTP_1_1, HttpMethod.GET, uri.getRawPath());
+            request.headers().setAll(fullRequest.headers());
+            request.headers().set(HttpHeaderNames.HOST, host.getHost());
+            f.channel().writeAndFlush(request);
             f.channel().closeFuture().sync();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | URISyntaxException e) {
             e.printStackTrace();
         } finally {
             clientGroup.shutdownGracefully();
@@ -49,11 +68,22 @@ public class NettyClientForwarder implements Forwarder {
         return null;
     }
 
-    private static class HttpClientHandler extends SimpleChannelInboundHandler<Object> {
+    private static class HttpClientHandler extends SimpleChannelInboundHandler<HttpResponse> {
 
         @Override
-        protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
-            System.out.println(msg);
+        public void channelReadComplete(ChannelHandlerContext ctx) {
+            ctx.flush();
+        }
+
+        @Override
+        protected void channelRead0(ChannelHandlerContext ctx, HttpResponse httpResponse) throws Exception {
+            ctx.writeAndFlush(httpResponse);
+        }
+
+        @Override
+        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+            cause.printStackTrace();
+            ctx.close();
         }
 
     }

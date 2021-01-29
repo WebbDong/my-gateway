@@ -2,7 +2,7 @@ server:
   port: 9090
 myGateway:
   # okhttp or netty or httpclient
-  forwardClientType: okhttp
+  forwardClientType: netty
   # 路由配置
   routes:
     - id: HttpServer01
