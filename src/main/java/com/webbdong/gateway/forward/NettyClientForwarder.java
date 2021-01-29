@@ -83,7 +83,7 @@ public class NettyClientForwarder implements Forwarder {
             f.channel().writeAndFlush(request);
             System.out.println("writeAndFlush");
             f.channel().closeFuture().sync();
-            // 异步转同步
+            // 异步转同步，阻塞等待数据
             ResponseData responseData = gso.get(rd -> rd != null);
             return parseResponseData(responseData);
         } catch (InterruptedException | URISyntaxException e) {
@@ -147,11 +147,11 @@ public class NettyClientForwarder implements Forwarder {
 
         private ResponseData responseData = new ResponseData();
 
-        private GuardedSuspensionObject<ResponseData> go;
+        private GuardedSuspensionObject<ResponseData> gso;
 
-        public HttpClientHandler(Object gsoKey, GuardedSuspensionObject<ResponseData> go) {
+        public HttpClientHandler(Object gsoKey, GuardedSuspensionObject<ResponseData> gso) {
             this.gsoKey = gsoKey;
-            this.go = go;
+            this.gso = gso;
         }
 
         @Override
@@ -171,7 +171,8 @@ public class NettyClientForwarder implements Forwarder {
                     responseData.getByteBufList().add(byteBuf);
                     responseData.addLength(byteBuf.readableBytes());
                 }
-                go.fireEvent(gsoKey, responseData);
+                // 设置数据，唤醒等待的线程
+                gso.fireEvent(gsoKey, responseData);
                 ctx.close();
             }
         }
