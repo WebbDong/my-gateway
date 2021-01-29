@@ -7,7 +7,8 @@ myGateway:
   routes:
     - id: HttpServer01
       listOfServers:
-        - "https://www.baidu.com/"
+        - "https://www.youku.com"
+        - "https://www.baidu.com"
       paths:
         - /
     - id: HttpServer02

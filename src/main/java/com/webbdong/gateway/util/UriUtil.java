@@ -26,7 +26,10 @@ public class UriUtil {
         if (startIndex == -1) {
             throw new IllegalArgumentException("url format is wrong!");
         }
-        int endIndex = url.length();
+        int endIndex = url.lastIndexOf(":");
+        if (endIndex == -1 || endIndex < startOffset) {
+            endIndex = url.length();
+        }
         if (url.endsWith("/")) {
             endIndex--;
         }

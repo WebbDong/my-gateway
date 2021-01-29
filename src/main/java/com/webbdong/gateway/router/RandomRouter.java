@@ -19,7 +19,8 @@ public class RandomRouter implements Router {
             return null;
         }
         final String[] urls = routeConfig.getListOfServers();
-        return urls[ThreadLocalRandom.current().nextInt(urls.length)];
+        int random = ThreadLocalRandom.current().nextInt(urls.length);
+        return urls[random];
     }
 
 }
