@@ -10,8 +10,7 @@ import com.webbdong.gateway.netty.MyGatewayServer;
 public class MyGatewayApplication {
 
     public static void main(String[] args) throws InterruptedException {
-        MyGatewayServer server = new MyGatewayServer();
-        server.start();
+        new MyGatewayServer().start();
     }
 
 }
