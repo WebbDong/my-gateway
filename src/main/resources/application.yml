@@ -2,13 +2,20 @@ server:
   port: 9090
 myGateway:
   # okhttp or netty or httpclient
-  forwardClientType: netty
+  forwardClientType: okhttp
   # 路由配置
   routes:
     - id: HttpServer01
       listOfServers:
         - "https://www.youku.com"
         - "https://www.baidu.com"
+        - "https://www.csdn.net/"
+        - "https://www.51cto.com/"
+        - "https://leetcode-cn.com/"
+        - "https://segmentfault.com/"
+        - "https://juejin.cn/"
+        - "https://www.qq.com/"
+        - "https://www.taobao.com/"
       paths:
         - /
     - id: HttpServer02
